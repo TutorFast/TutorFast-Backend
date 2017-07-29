@@ -9,3 +9,5 @@ export const STRIPE_CLIENT_SECRET = process.env.STRIPE_CLIENT_SECRET;
 export const FRONTEND_URI = process.env.FRONTEND_URI;
 export const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET;
 export const STRIPE_CLIENT_ID = process.env.STRIPE_CLIENT_ID;
+export const MAILGUN_API_BASE = process.env.MAILGUN_API_BASE;
+export const MAILGUN_API_KEY = process.env.MAILGUN_API_KEY;
