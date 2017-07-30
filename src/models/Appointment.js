@@ -43,7 +43,10 @@ export const appointmentSchema = db.Schema({
     required: true,
   },
 
-  cost: Number,
+  cost: {
+    type: Number,
+    required: true,
+  },
 
   charge: String,
 });

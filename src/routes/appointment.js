@@ -2,6 +2,10 @@ import { Router } from 'express';
 import User from '../models/User';
 import Appointment from '../models/Appointment';
 import stripe from '../stripe';
+import mailgun from '../mailgun';
+import { MAILGUN_DOMAIN, FRONTEND_URI } from '../config';
+import { pipe } from '../util';
+
 
 const router = Router();
 
@@ -38,8 +42,37 @@ router.post('/', (req, res) => {
     }))
     .then(appointment => appointment.populate('learner').populate('tutor').execPopulate())
     .then(appointment => appointment.save())
-    .then(appointment => res.json({ appointment, message: 'Appointment was created.' }))
-    .catch(err => res.status(400).json({ err, message: 'Tutor does not exist.' }))
+    .then(pipe(appointment => res.json({ appointment, message: 'Appointment was created.' })))
+    .catch(err => res.status(400).json({ err, message: 'Appointment could not be created.' }))
+    .then(pipe(console.log))
+    .then(appointment => new Promise((resolve, reject) =>
+      mailgun.messages().send(
+        {
+          from: `TurorFast <tutorfast@${MAILGUN_DOMAIN}>`,
+          to: appointment.tutor.email,
+          subject: `${appointment.learner.username} proposed an appointment to you.`,
+          text:
+            `${
+              appointment.learner.username
+            } would like to meet you on ${
+              new Date(appointment.startDate).toLocaleDateString()
+            } from ${
+              new Date(appointment.startDate).toLocaleTimeString()
+            } to ${
+              new Date(appointment.endDate).toLocaleTimeString()
+            } at ${
+              appointment.location
+            } and be taught about ${
+              appointment.subject
+            }.  To approve or reject the appointment visit this address: ${
+              FRONTEND_URI}/#/appointment/${appointment._id
+            }`,
+        },
+        (err, body) => err && reject(err) || resolve(body),
+      )
+    ))
+    .catch(console.log)
+    .then(console.log)
   ;
 });
 
@@ -77,7 +110,6 @@ router.post('/approve/:id', (req, res) => {
     .catch(err => res.status(400).json({ err, message: 'Appointment could not be approved.' }))
   ;
 });
-
 
 router.post('/reject/:id', (req, res) => {
   const tutor = req.user;
