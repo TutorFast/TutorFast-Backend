@@ -2,8 +2,7 @@ import { Router } from 'express';
 import User from '../models/User';
 import Appointment from '../models/Appointment';
 import stripe from '../stripe';
-import mailgun from '../mailgun';
-import { MAILGUN_DOMAIN, FRONTEND_URI } from '../config';
+import { notifyTutor } from '../mailgun';
 import { pipe } from '../util';
 
 
@@ -44,53 +43,8 @@ router.post('/', (req, res) => {
     .then(appointment => appointment.save())
     .then(pipe(appointment => res.json({ appointment, message: 'Appointment was created.' })))
     .catch(err => res.status(400).json({ err, message: 'Appointment could not be created.' }))
-    .then(pipe(console.log))
-    .then(appointment => new Promise((resolve, reject) =>
-      mailgun.messages().send(
-        {
-          from: `TurorFast <tutorfast@${MAILGUN_DOMAIN}>`,
-          to: appointment.tutor.email,
-          subject: `${appointment.learner.username} has Proposed an Appointment.`,
-          text:
-            `${
-              appointment.learner.username
-            } would like to meet you on ${
-              new Date(appointment.startDate).toLocaleDateString()
-            } from ${
-              new Date(appointment.startDate).toLocaleTimeString()
-            } to ${
-              new Date(appointment.endDate).toLocaleTimeString()
-            } at ${
-              appointment.location
-            } and be taught ${
-              appointment.subject
-            }.  To approve or reject the appointment visit this address: ${
-              FRONTEND_URI}/#/appointment/${appointment._id
-            }`,
-          html:
-            `<p><em>${
-              appointment.learner.username
-            }</em> would like to meet you on <em>${
-              new Date(appointment.startDate).toLocaleDateString()
-            }</em> from <em>${
-              new Date(appointment.startDate).toLocaleTimeString()
-            }</em> to <em>${
-              new Date(appointment.endDate).toLocaleTimeString()
-            }</em> at <em>${
-              appointment.location
-            }</em> and be taught <em>${
-              appointment.subject
-            }</em>.</p><p>To approve or reject the appointment visit this address: <a href="${
-              FRONTEND_URI}/#/appointment/${appointment._id
-            }">${
-              FRONTEND_URI}/#/appointment/${appointment._id
-            }</a></p>`,
-        },
-        (err, body) => err && reject(err) || resolve(body),
-      )
-    ))
+    .then(notifyTutor)
     .catch(console.log)
-    .then(console.log)
   ;
 });
 
