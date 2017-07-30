@@ -50,7 +50,7 @@ router.post('/', (req, res) => {
         {
           from: `TurorFast <tutorfast@${MAILGUN_DOMAIN}>`,
           to: appointment.tutor.email,
-          subject: `${appointment.learner.username} proposed an appointment to you.`,
+          subject: `${appointment.learner.username} has Proposed an Appointment.`,
           text:
             `${
               appointment.learner.username
@@ -62,11 +62,29 @@ router.post('/', (req, res) => {
               new Date(appointment.endDate).toLocaleTimeString()
             } at ${
               appointment.location
-            } and be taught about ${
+            } and be taught ${
               appointment.subject
             }.  To approve or reject the appointment visit this address: ${
               FRONTEND_URI}/#/appointment/${appointment._id
             }`,
+          html:
+            `<p><em>${
+              appointment.learner.username
+            }</em> would like to meet you on <em>${
+              new Date(appointment.startDate).toLocaleDateString()
+            }</em> from <em>${
+              new Date(appointment.startDate).toLocaleTimeString()
+            }</em> to <em>${
+              new Date(appointment.endDate).toLocaleTimeString()
+            }</em> at <em>${
+              appointment.location
+            }</em> and be taught <em>${
+              appointment.subject
+            }</em>.</p><p>To approve or reject the appointment visit this address: <a href="${
+              FRONTEND_URI}/#/appointment/${appointment._id
+            }">${
+              FRONTEND_URI}/#/appointment/${appointment._id
+            }</a></p>`,
         },
         (err, body) => err && reject(err) || resolve(body),
       )
