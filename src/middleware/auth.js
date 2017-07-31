@@ -1,7 +1,7 @@
-
 import User from '../models/User';
 import { pjwt } from '../util';
 import { JWT_SECRET } from '../config';
+
 
 export default (req, res, next) => {
   if (isWhitelistedRequest(req)) {

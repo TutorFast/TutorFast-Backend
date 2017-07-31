@@ -1,4 +1,6 @@
 import express, { Router } from 'express';
+import socketIO from 'socket.io';
+import { createServer } from 'http';
 import { PORT } from './config';
 
 const app = express();
@@ -48,6 +50,12 @@ app.use('/', root);
 
 
 // Start the server.
-const server = app.listen(PORT, () => {
-  console.log(`Listening on ${server.address().port}...`);
-});
+export const server = createServer(app);
+
+// socket.io listeners
+import './socket.io/onAuth';
+
+server.listen(PORT);
+// const server = app.listen(PORT, () => {
+//   console.log(`Listening on ${server.address().port}...`);
+// });

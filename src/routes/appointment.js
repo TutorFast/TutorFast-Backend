@@ -4,6 +4,7 @@ import Appointment from '../models/Appointment';
 import stripe from '../stripe';
 import { notifyTutor } from '../mailgun';
 import { pipe } from '../util';
+import io from '../socket.io';
 
 
 const router = Router();
@@ -43,7 +44,8 @@ router.post('/', (req, res) => {
     .then(appointment => appointment.save())
     .then(pipe(appointment => res.json({ appointment, message: 'Appointment was created.' })))
     .catch(err => res.status(400).json({ err, message: 'Appointment could not be created.' }))
-    .then(notifyTutor)
+    .then(pipe(notifyTutor))
+    .then(appointment => req.user.send('proposal', appointment))
     .catch(console.log)
   ;
 });

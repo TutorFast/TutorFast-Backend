@@ -2,6 +2,7 @@ import db from '../db';
 import bcrypt from 'bcrypt';
 import { JWT_SECRET, TOKEN_LIFE } from '../config';
 import { pjwt } from '../util';
+import io from '../socket.io';
 
 export const userSchema = db.Schema({
   email: {
@@ -38,12 +39,15 @@ export const userSchema = db.Schema({
   card: String,
 
   account: String,
+
+  socketId: String,
 });
 
 userSchema.set('toObject', {
   transform: (_, ret) => {
     delete ret.passwordDigest;
     delete ret.__v;
+    delete ret.socketId;
   },
 });
 
@@ -56,6 +60,11 @@ userSchema.methods.authenticate = function (password) {
       : Promise.reject('Password mismatch.')
     )
   ;
+};
+
+userSchema.methods.send = function (...args) {
+  if (this.socketId)
+    io.to(this.socketId).emit(...args);
 };
 
 export default db.model('User', userSchema);
