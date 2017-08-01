@@ -68,6 +68,13 @@ router.get('/', (req, res) => {
   res.json(req.user);
 });
 
+router.get('/:id', (req, res) => {
+  User.findOne({ _id: req.params.id })
+    .then(user => res.json({ message: 'User retrieved successfuly.', user }))
+    .catch(err => res.status(404).json({ message: 'User does not exist.', err }))
+  ;
+});
+
 router.patch('/', (req, res) => {
   [
     'email',
