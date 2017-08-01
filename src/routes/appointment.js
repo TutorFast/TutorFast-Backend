@@ -50,6 +50,22 @@ router.post('/', (req, res) => {
   ;
 });
 
+router.get('/:id', (req, res) => {
+  Appointment.findOne({ _id: req.params.id })
+    .then(appt => {
+      if (
+        req.user._id.toString() === appt.learner.toString() ||
+        req.user._id.toString() === appt.tutor.toString()
+      ) return appt;
+
+      throw 'Requesting user was neither a tutor or leaner in the appointment.';
+    })
+    .then(appt => appt.populate('learner tutor').execPopulate())
+    .then(appt => res.json(appt))
+    .catch(err => res.status(400).json({ err, message: 'Appointment could not be sent.' }))
+  ;
+});
+
 router.post('/approve/:id', (req, res) => {
   const tutor = req.user;
 
