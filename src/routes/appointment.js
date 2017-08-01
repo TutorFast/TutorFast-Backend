@@ -61,7 +61,7 @@ router.get('/:id', (req, res) => {
       throw 'Requesting user was neither a tutor or leaner in the appointment.';
     })
     .then(appt => appt.populate('learner tutor').execPopulate())
-    .then(appt => res.json(appt))
+    .then(appt => res.json({ appointment: appt, message: 'Appointment found.' }))
     .catch(err => res.status(400).json({ err, message: 'Appointment could not be sent.' }))
   ;
 });
