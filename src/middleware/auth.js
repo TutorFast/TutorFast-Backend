@@ -1,7 +1,7 @@
-
 import User from '../models/User';
 import { pjwt } from '../util';
 import { JWT_SECRET } from '../config';
+
 
 export default (req, res, next) => {
   if (isWhitelistedRequest(req)) {
@@ -48,7 +48,8 @@ function isWhitelistedRequest(req) {
   return isPreflight(req)
     || isLoggingInOrSigningUp(req)
     || isGettingTutors(req)
-    || isFailedStripeRedirect(req);
+    || isFailedStripeRedirect(req)
+    || isSocket(req);
 }
 
 function isLoggingInOrSigningUp(req) {
@@ -76,4 +77,8 @@ function isStripeRedirect(req) {
 
 function isFailedStripeRedirect(req) {
   return isStripeRedirect(req) && (!req.query || req.query.error);
+}
+
+function isSocket(req) {
+  return req.path === '/socket.io/';
 }
