@@ -2,7 +2,7 @@ import db from '../db';
 import bcrypt from 'bcrypt';
 import { JWT_SECRET, TOKEN_LIFE } from '../config';
 import { pjwt } from '../util';
-import io from '../socket.io';
+import { io } from '../socket.io';
 
 export const userSchema = db.Schema({
   email: {
@@ -47,7 +47,13 @@ userSchema.set('toObject', {
   transform: (_, ret) => {
     delete ret.passwordDigest;
     delete ret.__v;
-    delete ret.socketId;
+  },
+});
+
+userSchema.set('toJSON', {
+  transform: (_, ret) => {
+    delete ret.passwordDigest;
+    delete ret.__v;
   },
 });
 

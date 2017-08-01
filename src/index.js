@@ -1,11 +1,22 @@
 import express, { Router } from 'express';
-import socketIO from 'socket.io';
 import { createServer } from 'http';
+import bodyParser from 'body-parser';
+
 import { PORT } from './config';
 
 const app = express();
 
-import bodyParser from 'body-parser';
+// Start the server.
+export const server = createServer(app);
+
+import socketIo from 'socket.io';
+
+export const io = socketIo(server);
+
+// set up socket.io listeners
+import onConnect from './socket.io/onConnect';
+
+io.on('connection', onConnect);
 
 
 const root = Router();
@@ -49,13 +60,4 @@ root.use('/appointment', appointmentRouter);
 app.use('/', root);
 
 
-// Start the server.
-export const server = createServer(app);
-
-// socket.io listeners
-import './socket.io/onAuth';
-
 server.listen(PORT);
-// const server = app.listen(PORT, () => {
-//   console.log(`Listening on ${server.address().port}...`);
-// });

@@ -4,7 +4,6 @@ import Appointment from '../models/Appointment';
 import stripe from '../stripe';
 import { notifyTutor } from '../mailgun';
 import { pipe } from '../util';
-import io from '../socket.io';
 
 
 const router = Router();
@@ -31,21 +30,22 @@ router.post('/', (req, res) => {
   }
 
   User.findOne({ _id: req.body.tutor, isTutor: true })
-    .then(tutor => new Appointment({
-      tutor: tutor._id,
-      learner: learner._id,
-      startDate: req.body.startDate,
-      endDate: req.body.endDate,
-      location: req.body.location,
-      subject: req.body.subject,
-      cost: tutor.wage * ((new Date(req.body.endDate) - new Date(req.body.startDate)) / 1000 / 60 / 60),
-    }))
-    .then(appointment => appointment.populate('learner').populate('tutor').execPopulate())
-    .then(appointment => appointment.save())
-    .then(pipe(appointment => res.json({ appointment, message: 'Appointment was created.' })))
-    .catch(err => res.status(400).json({ err, message: 'Appointment could not be created.' }))
-    .then(pipe(notifyTutor))
-    .then(appointment => req.user.send('proposal', appointment))
+    .then(tutor =>
+      new Appointment({
+        tutor: tutor._id,
+        learner: learner._id,
+        startDate: req.body.startDate,
+        endDate: req.body.endDate,
+        location: req.body.location,
+        subject: req.body.subject,
+        cost: tutor.wage * ((new Date(req.body.endDate) - new Date(req.body.startDate)) / 1000 / 60 / 60),
+      }).populate('learner').populate('tutor').execPopulate()
+        .then(appointment => appointment.save())
+        .then(pipe(appointment => res.json({ appointment, message: 'Appointment was created.' })))
+        .catch(err => res.status(400).json({ err, message: 'Appointment could not be created.' }))
+        .then(pipe(notifyTutor))
+        .then(appointment => tutor.send('proposal', appointment))
+    )
     .catch(console.log)
   ;
 });
